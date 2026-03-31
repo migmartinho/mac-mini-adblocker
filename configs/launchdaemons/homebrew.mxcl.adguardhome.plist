@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchDaemon for AdGuard Home
+  =====================================================================
+  This is provided for reference.  AdGuard Home installs its own
+  LaunchDaemon plist via:
+      sudo /usr/local/bin/AdGuardHome -s install
+
+  If you need to install or customise it manually, copy this file to:
+      /Library/LaunchDaemons/homebrew.mxcl.adguardhome.plist
+
+  Then load it:
+      sudo launchctl load /Library/LaunchDaemons/homebrew.mxcl.adguardhome.plist
+  =====================================================================
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>homebrew.mxcl.adguardhome</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/AdGuardHome</string>
+        <string>--no-check-update</string>
+        <string>-c</string>
+        <string>/opt/AdGuardHome/AdGuardHome.yaml</string>
+        <string>-w</string>
+        <string>/opt/AdGuardHome</string>
+    </array>
+
+    <!-- Run at boot, before user login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart automatically if it crashes -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Run as root so it can bind to port 53 -->
+    <key>UserName</key>
+    <string>root</string>
+
+    <!-- Standard output / error logs -->
+    <key>StandardOutPath</key>
+    <string>/opt/AdGuardHome/stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/opt/AdGuardHome/stderr.log</string>
+
+    <!-- Working directory -->
+    <key>WorkingDirectory</key>
+    <string>/opt/AdGuardHome</string>
+
+    <!-- Soft resource limits -->
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>65536</integer>
+    </dict>
+</dict>
+</plist>

@@ -1,0 +1,81 @@
+# WireGuard Server Configuration — Annotated Example
+# ============================================================
+# This is an example WireGuard server config for a Mac Mini
+# running AdGuard Home as the DNS server for VPN clients.
+#
+# Location on macOS (wireguard-go):
+#   /opt/homebrew/etc/wireguard/wg0.conf
+# or managed via the WireGuard macOS app.
+#
+# Replace all <placeholder> values with your own keys/IPs.
+# ============================================================
+
+[Interface]
+# The VPN server's address on the tunnel interface.
+# AdGuard Home must listen on this IP for DNS.
+Address    = 10.0.0.1/24
+
+# UDP port the server listens on.
+ListenPort = 51820
+
+# Server private key (generate with: wg genkey)
+PrivateKey = <server-private-key>
+
+# ── IP Forwarding ──────────────────────────────────────────
+# Enable IP forwarding when the interface comes up.
+# This allows traffic from VPN clients to be routed.
+PostUp   = sysctl -w net.inet.ip.forwarding=1
+
+# Disable IP forwarding when the interface goes down.
+PostDown = sysctl -w net.inet.ip.forwarding=0
+
+# ── NAT (for full-tunnel mode) ─────────────────────────────
+# If clients use AllowedIPs = 0.0.0.0/0 (all traffic through VPN),
+# enable NAT so their traffic can exit via the Mac Mini's internet
+# interface (replace en0 with your actual interface name):
+#
+# PostUp   = ... && /usr/sbin/sysctl -w net.inet.ip.forwarding=1 && \
+#            echo "nat on en0 from 10.0.0.0/24 to any -> (en0)" | pfctl -ef -
+# PostDown = pfctl -F nat
+
+# ── Peers ──────────────────────────────────────────────────
+# Add one [Peer] section per client device.
+
+[Peer]
+# Human-readable comment (optional)
+# Name: Phone
+
+# Client public key (generate with: wg pubkey < client-private.key)
+PublicKey  = <client-1-public-key>
+
+# The IP address allocated to this client on the VPN tunnel.
+AllowedIPs = 10.0.0.2/32
+
+# Optional: pre-shared key for additional layer of encryption.
+# Generate with: wg genpsk
+# PresharedKey = <preshared-key>
+
+# Optional: keepalive for clients behind NAT (e.g. mobile devices).
+# PersistentKeepalive = 25
+
+[Peer]
+# Name: Laptop
+PublicKey  = <client-2-public-key>
+AllowedIPs = 10.0.0.3/32
+
+# ── Corresponding Client Config Example ────────────────────
+# Each client needs a config like this:
+#
+# [Interface]
+# Address    = 10.0.0.2/32
+# PrivateKey = <client-private-key>
+# DNS        = 10.0.0.1       ← This is the key line!
+#                                Routes all DNS through AdGuard Home
+#
+# [Peer]
+# PublicKey  = <server-public-key>
+# Endpoint   = <mac-mini-public-ip-or-hostname>:51820
+# AllowedIPs = 0.0.0.0/0, ::/0   # Full tunnel (all traffic via VPN)
+# # Or for split tunnel (only VPN subnet + DNS):
+# # AllowedIPs = 10.0.0.0/24
+# PersistentKeepalive = 25

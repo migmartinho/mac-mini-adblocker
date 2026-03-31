@@ -1,0 +1,42 @@
+# Root Hints — How to Download and Maintain
+
+The root hints file (`root.hints`) tells Unbound where the 13 root DNS server clusters are.
+Unbound cannot start without this file.
+
+## Initial Download
+
+```bash
+curl -o /opt/homebrew/etc/unbound/root.hints \
+     https://www.internic.net/domain/named.cache
+```
+
+## Initialise the DNSSEC Trust Anchor
+
+After placing the config file and root hints, initialise the DNSSEC trust anchor:
+
+```bash
+sudo /opt/homebrew/sbin/unbound-anchor -a /opt/homebrew/etc/unbound/root.key
+```
+
+This downloads the IANA root trust anchor (KSK) and writes it to `root.key`.
+Unbound will maintain this file automatically going forward.
+
+## Automatic Monthly Update via cron
+
+The root hints file is updated by IANA infrequently, but it is good practice to refresh
+it monthly:
+
+```bash
+# Add a monthly cron job (as root or the user that runs Unbound):
+(crontab -l 2>/dev/null; echo "0 3 1 * * curl -sS -o /opt/homebrew/etc/unbound/root.hints https://www.internic.net/domain/named.cache && brew services restart unbound") | crontab -
+```
+
+## Verification
+
+After downloading, verify Unbound's configuration is valid:
+
+```bash
+/opt/homebrew/sbin/unbound-checkconf /opt/homebrew/etc/unbound/unbound.conf
+```
+
+Expected: `unbound-checkconf: no errors in /opt/homebrew/etc/unbound/unbound.conf`
