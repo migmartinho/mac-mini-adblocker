@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchDaemon for Unbound
+  =====================================================================
+  This is provided for reference.  Homebrew manages Unbound's
+  LaunchDaemon automatically via:
+      sudo brew services start unbound
+
+  If you need to install or customise it manually, copy this file to:
+      /Library/LaunchDaemons/homebrew.mxcl.unbound.plist
+
+  Then load it:
+      sudo launchctl load /Library/LaunchDaemons/homebrew.mxcl.unbound.plist
+  =====================================================================
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>homebrew.mxcl.unbound</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/sbin/unbound</string>
+        <string>-d</string>
+        <string>-c</string>
+        <string>/opt/homebrew/etc/unbound/unbound.conf</string>
+    </array>
+
+    <!-- Run at boot -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart automatically if it crashes -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Run as root (needed to read key material on first start) -->
+    <key>UserName</key>
+    <string>root</string>
+
+    <!-- Standard output / error logs -->
+    <key>StandardOutPath</key>
+    <string>/opt/homebrew/var/log/unbound/unbound-stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/opt/homebrew/var/log/unbound/unbound-stderr.log</string>
+
+    <!-- Soft resource limits -->
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>65536</integer>
+    </dict>
+</dict>
+</plist>

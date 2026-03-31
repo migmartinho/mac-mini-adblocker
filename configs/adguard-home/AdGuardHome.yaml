@@ -1,0 +1,164 @@
+# AdGuard Home Configuration
+# ============================================================
+# Place this file at: /opt/AdGuardHome/AdGuardHome.yaml
+#
+# IMPORTANT: Replace the placeholder password hash below.
+# Generate your own bcrypt hash with:
+#   htpasswd -bnBC 10 "" "your-password" | tr -d ':\n' | sed 's/$2y/$2a/'
+# ============================================================
+
+http:
+  # Web dashboard listen address.
+  # Restrict to localhost if you only access the dashboard locally,
+  # or to your LAN IP if you want to access it from other machines.
+  pprof:
+    port: 6060
+    enabled: false
+  address: 0.0.0.0:3000
+  session_ttl: 720h
+
+users:
+  - name: admin
+    # Default password: "changeme"  ← CHANGE THIS BEFORE DEPLOYING
+    # Generate a new hash: htpasswd -bnBC 10 "" "your-password" | tr -d ':\n' | sed 's/$2y/$2a/'
+    password: $2a$10$placeholder_replace_with_real_hash_XXXXXXXXXXXXXXXXXXXXX
+
+auth_attempts: 5
+block_auth_min: 15
+
+# ── DNS Settings ────────────────────────────────────────────
+dns:
+  # Interfaces AdGuard Home listens on for DNS queries.
+  # 127.0.0.1 – used internally and for testing on the Mac Mini.
+  # 10.0.0.1  – WireGuard VPN interface; VPN clients send DNS here.
+  # Add your LAN IP (e.g. 192.168.1.100) for LAN-wide blocking.
+  bind_hosts:
+    - 127.0.0.1
+    - 10.0.0.1
+  port: 53
+
+  # ── Upstream Resolvers ──────────────────────────────────
+  # Primary: Unbound running locally on port 5335.
+  # Unbound performs full recursive resolution (no third-party DNS).
+  upstream_dns:
+    - 127.0.0.1:5335
+
+  # Fallback resolvers used only if the upstream is unreachable.
+  fallback_dns:
+    - tls://1.1.1.1        # Cloudflare DNS over TLS (fallback only)
+    - tls://8.8.8.8        # Google DNS over TLS (fallback only)
+
+  # Bootstrap resolvers used to resolve DoH/DoT upstream hostnames.
+  bootstrap_dns:
+    - 1.1.1.1
+    - 8.8.8.8
+
+  # Parallel queries to all upstreams; fastest answer wins.
+  all_servers: false
+
+  # Fastest address determination.
+  fastest_addr: false
+
+  # ── Caching ────────────────────────────────────────────
+  cache_size: 4194304          # 4 MB DNS cache in AdGuard Home
+  cache_ttl_min: 0
+  cache_ttl_max: 0
+  cache_optimistic: true       # Serve stale cache while refreshing
+
+  # ── DNSSEC ─────────────────────────────────────────────
+  # Unbound handles DNSSEC validation; AdGuard Home passes through.
+  # Set to true if you want AGH to also enforce DNSSEC.
+  dnssec_enabled: false
+
+  # ── Blocking behaviour ─────────────────────────────────
+  # Return NXDOMAIN for blocked domains instead of 0.0.0.0.
+  # NXDOMAIN is more standards-compliant; both options work.
+  blocking_mode: nxdomain
+
+  # ── Safe search ────────────────────────────────────────
+  safe_search:
+    enabled: false
+
+  # ── Safe browsing ──────────────────────────────────────
+  safe_browsing_enabled: false
+
+  # ── Parental control ───────────────────────────────────
+  parental_enabled: false
+
+  # ── Query log ──────────────────────────────────────────
+  querylog_enabled: true
+  querylog_file_enabled: true
+  querylog_interval: 2160h    # Keep 90 days of query logs
+  querylog_size_memory: 1000
+
+  # ── Statistics ─────────────────────────────────────────
+  statistics_interval: 2160h  # Keep 90 days of statistics
+
+  # ── Allowed clients ────────────────────────────────────
+  # Allow queries from localhost and the VPN subnet.
+  # Add your LAN subnet (e.g. 192.168.1.0/24) for LAN-wide blocking.
+  allowed_clients:
+    - 127.0.0.1
+    - 10.0.0.0/24
+
+  # ── EDNS Client Subnet ─────────────────────────────────
+  # Disabled for privacy — do not leak your subnet to authoritative servers.
+  edns_cs_enabled: false
+
+# ── Filtering / Blocklists ───────────────────────────────────
+filters:
+  - enabled: true
+    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+    name: AdGuard DNS filter
+    id: 1
+
+  - enabled: true
+    url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt
+    name: AdAway Default Blocklist
+    id: 2
+
+  - enabled: true
+    url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    name: Steven Black – Unified hosts (ads + malware)
+    id: 3
+
+  - enabled: true
+    url: https://easylist.to/easylist/easylist.txt
+    name: EasyList
+    id: 4
+
+  - enabled: true
+    url: https://easylist.to/easylist/easyprivacy.txt
+    name: EasyPrivacy
+    id: 5
+
+  - enabled: true
+    url: https://big.oisd.nl/domainswild
+    name: OISD Big (wildcard)
+    id: 6
+
+  - enabled: true
+    url: https://raw.githubusercontent.com/nicehash/NiceHashQuickMiner/master/contrib/adblocker/blocklist.txt
+    name: NiceHash Cryptominer Blocklist
+    id: 7
+
+whitelist_filters: []
+
+user_rules: []
+
+# ── Filter update interval ──────────────────────────────────
+# How often (in hours) to automatically refresh blocklists.
+filters_update_interval: 24
+
+# ── Logging ─────────────────────────────────────────────────
+log:
+  file: /opt/AdGuardHome/AdGuardHome.log
+  max_backups: 3
+  max_size: 100           # MB
+  max_age: 30             # Days
+  compress: true
+  local_time: true
+  verbose: false
+
+# ── Schema version (do not edit) ────────────────────────────
+schema_version: 28

@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# AdGuard Home runtime files (not to be committed)
+configs/adguard-home/querylog.json
+configs/adguard-home/data/
+configs/adguard-home/filters/
+
+# Unbound runtime files
+configs/unbound/root.hints
+configs/unbound/root.key
+configs/unbound/*.lock
+
+# Temporary files
+*.tmp
+*.bak
